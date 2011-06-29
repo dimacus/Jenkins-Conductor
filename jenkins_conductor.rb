@@ -45,8 +45,9 @@ config["jobs"][root_job]["downstream_jobs"]["serial_jobs"].each do |serial_proje
     sleep 5
   end while current_job["result"].nil?
 
+
   all_job_statuses[current_job_name] = {:status => current_job['result'],
-                                        :test_result_artifact => serial_project["test_result_artifact"] }
+                                        :test_result_artifact => serial_project[current_job_name]["test_result_artifact"] }
 
   puts "Job #{current_job_name} build #{current_job_number} with result of #{current_job['result']}"
 end
@@ -93,7 +94,7 @@ Parallel.map(downstream_parallel_jobs_to_run, :in_threads => downstream_parallel
   end while current_job["result"].nil?
 
   all_job_statuses[current_job_name] = {:status => current_job['result'],
-                                        :test_result_artifact => current_project["test_result_artifact"] }
+                                        :test_result_artifact => current_project[current_job_name]["test_result_artifact"] }
 
   puts "Job #{current_job_name} build #{current_job_number} with result of #{current_job['result']}"
 
