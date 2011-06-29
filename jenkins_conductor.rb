@@ -12,9 +12,9 @@ params = ARGV.getopts("c:", "current_job:")
 root_job = params["c"].nil? ? params["current_job"] : params["c"]
 
 
-downstream_jobs_to_run = config["jobs"][root_job]["downstream_jobs"]
+downstream_parallel_jobs_to_run = config["jobs"][root_job]["downstream_jobs"]["parallel_jobs"]
 
-Parallel.map(downstream_jobs_to_run, :in_threads => downstream_jobs_to_run.size) do |current_project|
+Parallel.map(downstream_parallel_jobs_to_run, :in_threads => downstream_parallel_jobs_to_run.size) do |current_project|
 
   current_job_name = current_project.keys.first
   url_to_job = "#{config["jenkins_base_url"]}/view/All/job/#{current_job_name}"
