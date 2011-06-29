@@ -37,20 +37,20 @@ Parallel.map(downstream_parallel_jobs_to_run, :in_threads => downstream_parallel
 
   current_job_number = previous_job_number + 1
 
+  puts "Waiting for job #{current_job_name} build #{current_job_number} to start"
   begin
     current_job_start_status = Net::HTTP.get_response(URI.parse(url_to_job + "/#{current_job_number}/api/json"))
-    puts "Waiting for job #{current_job_number} to start"
     sleep 5
   end while current_job_start_status.kind_of?(Net::HTTPNotFound)
 
-  puts "Job #{current_job_number} started"
+  puts "Job #{current_job_name} build #{current_job_number} started"
 
+  puts "waiting for job #{current_job_name} build #{current_job_number} to finish"
   begin
-    puts "waiting for job #{current_job_number} to finish"
     current_job = JSON.parse(Net::HTTP.get_response(URI.parse(url_to_job + "/#{current_job_number}/api/json")).body)
     sleep 5
   end while current_job["result"].nil?
 
-  puts current_job["result"]
+  puts "Job #{current_job_name} build #{current_job_number} with result of #{current_job['result']}"
 
 end
