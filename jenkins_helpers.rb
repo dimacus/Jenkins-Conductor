@@ -11,11 +11,17 @@ def launch_project_and_monitor_progress(current_project)
   wait_for_build_to_start(url_to_job, current_job_name, current_build_number)
   result = wait_for_build_to_finish(url_to_job, current_job_name, current_build_number)
 
-
-
   @all_job_statuses[current_job_name] = {:result => result,
                                         :test_result_artifact => current_project[current_job_name]["test_result_artifact"] }
 
+  return true if result.upcase == "SUCCESS"
+
+  if current_project[current_job_name]["continue_on_fail"] == false
+    puts "#{current_job_name} was explicitly set to exit on failure.\n\n"
+    puts "Current project statuses\n #{@all_job_statuses.inspect}\n\n"
+    puts "#{current_job_name} configs\n #{current_project.inspect}\n\n"
+    exit 1
+  end
 end
 
 def get_all_builds_for_project(url_to_job)
