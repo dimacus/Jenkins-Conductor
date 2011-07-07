@@ -44,7 +44,8 @@ def wait_for_build_to_start(url_to_job, current_job_name, current_build_number)
   puts "Waiting for job #{current_job_name} build #{current_build_number} to start"
   begin
     current_job_start_status = make_get_request(url_to_job + "/#{current_build_number}/api/json")
-    sleep 5
+    sleep 15
+    puts "_"
   end while current_job_start_status.kind_of?(Net::HTTPNotFound)
 
   puts "Job #{current_job_name} build #{current_build_number} started"
@@ -54,7 +55,8 @@ def wait_for_build_to_finish(url_to_job, current_job_name, current_build_number)
   puts "waiting for job #{current_job_name} build #{current_build_number} to finish"
   begin
     current_job = JSON.parse(make_get_request(url_to_job + "/#{current_build_number}/api/json").body)
-    sleep 5
+    sleep 15
+    puts "_"
   end while current_job["result"].nil?
   puts "Job #{current_job_name} build #{current_build_number} with result of #{current_job['result']}"
 
