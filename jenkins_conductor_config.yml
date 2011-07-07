@@ -1,0 +1,35 @@
+jenkins_base_url: http://jenkins.com
+artifact_destination: artifacts
+basic_auth:
+  username: billy bob
+  password: was here
+
+jobs:
+  MainJobThatControlsFirstSet:
+      downstream_jobs:
+        serial_jobs:
+          - JobName1:
+              test_result_artifacts:
+                - artifact.xml
+              continue_on_fail: true #set to false to exit if this job fails
+              params:
+                jenkins_build_param_1: say something
+        parallel_jobs:
+          - JobName2:
+              test_result_artifacts:
+                - hello.zip
+              params:
+                param2: Hello There I'm Sexy, are you?
+
+          - JobName3:
+              params:
+                param3: still sexy
+  AnotherJob:
+      downstream_jobs:
+        serial_jobs:
+          - JobName4:
+              test_result_artifacts:
+                - test_result.xml
+              continue_on_fail: false #set to false to exit if this job fails
+              params:
+                jenkins_build_param_1: say something
