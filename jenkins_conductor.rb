@@ -8,15 +8,17 @@ require "parallel"
 
 require "jenkins_helpers"
 
-@artifact_dir = "artifacts"
-
-`rm -rf #{@artifact_dir}`
-`mkdir #{@artifact_dir}`
 
 @config = YAML.load_file("jenkins_conductor_config.yml")
 cli_params = ARGV.getopts("c:", "current_job:")
 
 root_job = cli_params["c"].nil? ? cli_params["current_job"] : cli_params["c"]
+
+@artifact_dir = @config["artifact_destination"] || "artifacts"
+
+`rm -rf #{@artifact_dir}`
+`mkdir #{@artifact_dir}`
+
 
 @all_job_statuses = Hash.new
 
