@@ -35,8 +35,9 @@ def get_current_build_number(all_jobs_for_current_project)
 end
 
 def trigger_job(url_to_job, params)
- response = make_post_request("#{url_to_job}/buildWithParameters", params)
- throw "Error with post to #{url_to_job} with #{params} return was not 'Net::HTTPFound 302 Found'" unless response.kind_of?(Net::HTTPFound)
+  build_command = params ? "buildWithParameters" : "build"
+  response = make_post_request("#{url_to_job}/#{build_command}", params)
+  throw "Error with post to #{url_to_job} with #{params} return was not 'Net::HTTPFound 302 Found'" unless response.kind_of?(Net::HTTPFound)
 end
 
 def wait_for_build_to_start(url_to_job, current_job_name, current_build_number)
