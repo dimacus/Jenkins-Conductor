@@ -136,7 +136,7 @@ def make_post_request(url, params)
    request.basic_auth username, password
  end
 
- request.set_form_data(params)
+ request.set_form_data(params) if params
 
  http.request(request)
 end
