@@ -142,12 +142,13 @@ def make_post_request(url, params)
 end
 
 def get_basic_auth_credentials
+  if @config["basic_auth"]
+    username = @config["basic_auth"]["username"]
+    password = @config["basic_auth"]["password"]
 
-  username = @config["basic_auth"]["username"]
-  password = @config["basic_auth"]["password"]
-
-  unless username.nil? or password.nil?
-    return username, password
+    unless username.nil? or password.nil?
+      return username, password
+    end
   end
 end
 
