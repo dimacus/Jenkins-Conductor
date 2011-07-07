@@ -150,3 +150,16 @@ def get_basic_auth_credentials
     return username, password
   end
 end
+
+def check_if_any_job_failed(job_results)
+  job_failed = false
+
+  job_results.keys.each do |job_name|
+    puts "#{job_name} - #{job_results[job_name][:result]}"
+
+    job_failed = true if job_results[job_name][:result] != "SUCCESS"
+  end
+
+  exit 1 if job_failed
+
+end
