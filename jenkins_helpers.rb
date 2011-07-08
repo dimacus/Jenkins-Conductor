@@ -13,7 +13,7 @@ def launch_project_and_monitor_progress(current_project)
 
   @all_job_statuses[current_job_name] = {:result => result,
                                          :test_result_artifact => current_project[current_job_name]["test_result_artifact"],
-                                         :link_to_job_console => url_to_job + "/console"}
+                                         :link_to_job_console => url_to_job + "#{current_build_number}/console"}
   return "pass", "#{url_to_job}/#{current_build_number}" if result.upcase == "SUCCESS"
 
   if current_project[current_job_name]["continue_on_fail"] == false
