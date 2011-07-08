@@ -12,7 +12,8 @@ def launch_project_and_monitor_progress(current_project)
   result = wait_for_build_to_finish(url_to_job, current_job_name, current_build_number)
 
   @all_job_statuses[current_job_name] = {:result => result,
-                                        :test_result_artifact => current_project[current_job_name]["test_result_artifact"] }
+                                         :test_result_artifact => current_project[current_job_name]["test_result_artifact"],
+                                         :link_to_job_console => url_to_job + "/console"}
   return "pass", "#{url_to_job}/#{current_build_number}" if result.upcase == "SUCCESS"
 
   if current_project[current_job_name]["continue_on_fail"] == false
@@ -159,7 +160,7 @@ def check_if_any_job_failed(job_results)
   job_failed = false
 
   job_results.keys.each do |job_name|
-    puts "#{job_name} - #{job_results[job_name][:result]}"
+    puts "#{job_name} - #{job_results[job_name][:result]} - #{job_results[job_name][:link_to_job_console]}"
 
     job_failed = true if job_results[job_name][:result] != "SUCCESS"
   end
