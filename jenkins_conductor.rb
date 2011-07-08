@@ -29,7 +29,7 @@ unless serial_jobs.nil? or serial_jobs.empty?
     puts get_artifact_from_job(serial_project, link_to_job)
 
     if status == "fail"
-      puts "#{serial_project} Failed and was set to stop build on failure"
+      puts "#{serial_project.keys.first} Failed and was set to stop build on failure"
       exit 1
     end
 
