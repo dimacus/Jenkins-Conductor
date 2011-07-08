@@ -108,7 +108,7 @@ def unzip_file(url)
 
  if file.include? ".zip"
    puts "Unzipping #{file}"
-  `cd #{@artifact_dir}; unzip #{file}; cd -`
+   puts `cd #{@artifact_dir}; unzip #{file}; cd -`
 #  `rm -rf #{@artifact_dir}/#{file}`
  end
 end
