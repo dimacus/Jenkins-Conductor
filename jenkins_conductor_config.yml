@@ -1,35 +1,51 @@
-jenkins_base_url: http://jenkins.com
-artifact_destination: artifacts
-basic_auth:
-  username: billy bob
-  password: was here
-
+jenkins_base_url: http://buildmaster:8080
 jobs:
-  MainJobThatControlsFirstSet:
-      downstream_jobs:
-        serial_jobs:
-          - JobName1:
+  Groupon-Release-Git:
+    downstream_jobs:
+      parallel_jobs:
+          - Groupon-Release-Rspec:
+            test_result_artifacts:
+              - rspec_report.zip
+          - Groupon-Release-Cucumber:
               test_result_artifacts:
-                - artifact.xml
-              continue_on_fail: true #set to false to exit if this job fails
-              params:
-                jenkins_build_param_1: say something
-        parallel_jobs:
-          - JobName2:
-              test_result_artifacts:
-                - hello.zip
-              params:
-                param2: Hello There I'm Sexy, are you?
-
-          - JobName3:
-              params:
-                param3: still sexy
-  AnotherJob:
-      downstream_jobs:
-        serial_jobs:
-          - JobName4:
-              test_result_artifacts:
-                - test_result.xml
-              continue_on_fail: false #set to false to exit if this job fails
-              params:
-                jenkins_build_param_1: say something
+                - cucumber_report.zip
+        # - GrouponSeleniumFF-Release:
+        #     test_result_artifacts:
+        #       - cucumber_html_report.zip
+        #       - tag_cloud.html
+        #       - step_speed_report.html
+        #       - selenium_report.zip
+  Groupon-Master-Git:
+        downstream_jobs:
+          parallel_jobs:
+            - Groupon-Master-Branch-Rspec:
+                test_result_artifacts:
+                  - rspec_report.zip
+            - Groupon-Master-Branch-Cucumber:
+                test_result_artifacts:
+                  - cucumber_report.zip
+            # - GrouponSeleniumFF-Release:
+            #     test_result_artifacts:
+            #       - cucumber_html_report.zip
+            #       - tag_cloud.html
+            #       - step_speed_report.html
+            #       - selenium_report.zip  
+  Test:
+    downstream_jobs:
+      serial_jobs:
+        - Release-Merge-Test:
+            test_result_artifacts:
+              - hello.zip
+            params:
+              dima: hi there
+            continue_on_fail: true
+#      parallel_jobs:
+#        - Release-Merge-Test-2:
+#            params:
+#              other: wawa
+        # - GrouponSeleniumFF-Release:
+        #     test_result_artifacts:
+        #       - cucumber_html_report.zip
+        #       - tag_cloud.html
+        #       - step_speed_report.html
+        #       - selenium_report.zip

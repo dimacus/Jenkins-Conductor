@@ -1,13 +1,18 @@
 require 'rubygems'
 require 'optparse.rb'
-require "net/http"
-require "uri"
 require "yaml"
 require "json"
 require "parallel"
 
+require "http_helper"
+require "jenkins_job"
 require "jenkins_helpers"
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> c42d176a5844dec0eff4a4a9ac022cdd1bb84290
 @config = YAML.load_file("jenkins_conductor_config.yml")
 cli_params = ARGV.getopts("c:", "current_job:", "b:", "build_id:")
 
