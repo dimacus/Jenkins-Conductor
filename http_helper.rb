@@ -31,7 +31,12 @@ module HttpHelper
 
    request.set_form_data(params) if params
 
-   http.request(request)
+   begin
+    http.request(request)
+   rescue
+      puts "\n\nERROR:\n\nCould not reach #{url}\n\n"
+      exit 1
+   end
   end
 
   def download_file(url)
@@ -44,9 +49,9 @@ module HttpHelper
   end
 
   def get_basic_auth_credentials
-    if @config["basic_auth"]
-      username = @config["basic_auth"]["username"]
-      password = @config["basic_auth"]["password"]
+    if @basic_auth
+      username = @basic_auth["username"]
+      password = @basic_auth["password"]
 
       unless username.nil? or password.nil?
         return username, password
