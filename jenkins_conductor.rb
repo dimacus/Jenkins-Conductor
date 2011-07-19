@@ -4,56 +4,65 @@ require "yaml"
 require "json"
 require "parallel"
 
+require 'build_history_helper'
 require "http_helper"
 require "jenkins_job"
-require "jenkins_helpers"
-
-<<<<<<< HEAD
-=======
 
 
->>>>>>> c42d176a5844dec0eff4a4a9ac022cdd1bb84290
 @config = YAML.load_file("jenkins_conductor_config.yml")
 cli_params = ARGV.getopts("c:", "current_job:", "b:", "build_id:")
 
 
-root_job = cli_params["c"].nil? ? cli_params["current_job"] : cli_params["c"]
-@root_job_build_id = cli_params["b"].nil? ? cli_params["build_id"] : cli_params["b"]
-
-unless @root_job_build_id
-  puts "Please add current build number to the launch, or we have hard time triggering jobs"
-  exit 1
-end
-
-@artifact_dir = @config["artifact_destination"] || "artifacts"
-
-`rm -rf #{@artifact_dir}`
-`mkdir #{@artifact_dir}`
+parent_job = cli_params["c"].nil? ? cli_params["current_job"] : cli_params["c"]
+@parent_job_build_id = cli_params["b"].nil? ? cli_params["build_id"] : cli_params["b"]
 
 
-@all_job_statuses = Hash.new
+throw "Job #{parent_job} could not be found in jenkins_conductor_config.yml"                 unless @config["jobs"][parent_job]
+throw "Please add current build number to the launch, or we have hard time triggering jobs"  unless @parent_job_build_id
 
-serial_jobs = @config["jobs"][root_job]["downstream_jobs"]["serial_jobs"]
-unless serial_jobs.nil? or serial_jobs.empty?
-  serial_jobs.each do |serial_project|
-    status, link_to_job = launch_project_and_monitor_progress(serial_project, @root_job_build_id)
-    puts get_artifact_from_job(serial_project, link_to_job)
 
-    if status == "fail"
-      puts "#{serial_project.keys.first} Failed and was set to stop build on failure"
-      exit 1
-    end
+artifact_dir = @config["artifact_destination"] || "artifacts"
 
+`rm -rf #{artifact_dir}`
+`mkdir #{artifact_dir}`
+
+
+serial_jobs = @config["jobs"][parent_job]["downstream_jobs"]["serial_jobs"]
+serial_jobs = serial_jobs.nil? ? [] : serial_jobs.collect {|yaml_job| JenkinsJob.new(parent_job, @parent_job_build_id, yaml_job, @config, artifact_dir)}
+
+parallel_jobs = @config["jobs"][parent_job]["downstream_jobs"]["parallel_jobs"]
+parallel_jobs = parallel_jobs.nil? ? [] : parallel_jobs.collect {|yaml_job| JenkinsJob.new(parent_job, @parent_job_build_id, yaml_job, @config, artifact_dir)}
+
+
+serial_jobs.each do |serial_build|
+  serial_build.trigger_job
+  serial_build.get_artifacts
+
+  if serial_build.result.upcase != "SUCCESS"
+    error_message = "#{serial_build.job_name} has finished with status of #{serial_build.result}\n\n"
+    error_message += "This job was explicitly set to exit on failure"
+    throw error_message if serial_build.continue_on_failure == false
   end
 end
 
 
-parallel_jobs_to_run = @config["jobs"][root_job]["downstream_jobs"]["parallel_jobs"]
-unless parallel_jobs_to_run.nil? or parallel_jobs_to_run.empty?
-  Parallel.map(parallel_jobs_to_run, :in_threads => parallel_jobs_to_run.size) do |current_project|
-    status, link_to_job = launch_project_and_monitor_progress(current_project)
-    puts get_artifact_from_job(current_project, link_to_job)
-  end
+
+max_parallel_jobs = @config["max_parallel_jobs"] || parallel_jobs.size
+Parallel.map(parallel_jobs, :in_threads => max_parallel_jobs) do |parallel_build|
+  parallel_build.trigger_job
+  parallel_build.get_artifacts
 end
 
-check_if_any_job_failed(@all_job_statuses)
+all_builds = Array.new
+
+all_builds << serial_jobs
+all_builds << parallel_jobs
+
+all_builds_passed = true
+
+all_builds.flatten.each do |build|
+  puts "#{build.job_name} - #{build.result} - #{build.url}/#{build.build_id}"
+  all_builds_passed = false if build.result.upcase != "SUCCESS"
+end
+
+exit 1 unless all_builds_passed
