@@ -39,12 +39,12 @@ module HttpHelper
    end
   end
 
-  def download_file(url)
-    puts "Downloading #{url}"
-    url =~ /([\w\.]*)$/
+  def download_file(link_to_artifact)
+    puts "Downloading #{link_to_artifact}"
+    link_to_artifact =~ /([\w\.]*)$/
     file = $1
 
-    response = make_get_request url
+    response = make_get_request link_to_artifact
     open("#{@artifact_dir}/#{file}", "wb") {|save_file| save_file.write(response.body)}
   end
 
