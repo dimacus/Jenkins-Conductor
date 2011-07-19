@@ -7,7 +7,6 @@ def launch_project_and_monitor_progress(current_project, parent_job_build_id)
 
   trigger_job(url_to_job, child_job_params)
 
-  require 'debug'
   all_jobs_for_current_project = get_all_builds_for_project(url_to_job)
   current_build_number = get_current_build_number(all_jobs_for_current_project, parent_job_build_id)
 
@@ -112,14 +111,7 @@ def get_artifact_from_job(project, url_to_job)
 
 end
 
-def download_file(url)
-  puts "Downloading #{url}"
-  url =~ /([\w\.]*)$/
-  file = $1
 
-  response = make_get_request url
-  open("#{@artifact_dir}/#{file}", "wb") {|save_file| save_file.write(response.body)}
-end
 
 def unzip_file(url)
 
@@ -134,17 +126,6 @@ def unzip_file(url)
 end
 
 
-
-def get_basic_auth_credentials
-  if @config["basic_auth"]
-    username = @config["basic_auth"]["username"]
-    password = @config["basic_auth"]["password"]
-
-    unless username.nil? or password.nil?
-      return username, password
-    end
-  end
-end
 
 def check_if_any_job_failed(job_results)
   job_failed = false
