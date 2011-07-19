@@ -1,12 +1,17 @@
-def launch_project_and_monitor_progress(current_project)
+def launch_project_and_monitor_progress(current_project, parent_job_build_id)
   current_job_name = current_project.keys.first
   url_to_job = "#{@config["jenkins_base_url"]}/view/All/job/#{current_job_name}"
 
+  child_job_params = current_project[current_job_name]["params"].merge({"parent_job_name" =>current_job_name,
+                                                                        "parent_job_build_id" => parent_job_build_id})
 
+  trigger_job(url_to_job, child_job_params)
+
+  require 'debug'
   all_jobs_for_current_project = get_all_builds_for_project(url_to_job)
-  current_build_number = get_current_build_number(all_jobs_for_current_project)
+  current_build_number = get_current_build_number(all_jobs_for_current_project, parent_job_build_id)
 
-  trigger_job(url_to_job, current_project[current_job_name]["params"])
+
 
   wait_for_build_to_start(url_to_job, current_job_name, current_build_number)
   result = wait_for_build_to_finish(url_to_job, current_job_name, current_build_number)
@@ -30,14 +35,29 @@ def get_all_builds_for_project(url_to_job)
   JSON.parse(make_get_request(url_to_job + "/api/json").body)
 end
 
-def get_current_build_number(all_jobs_for_current_project)
-  previous_job_number = all_jobs_for_current_project["builds"].first.empty? ?  0 : all_jobs_for_current_project["builds"].first["number"]
-  previous_job_number + 1
+def get_current_build_number(all_jobs_for_current_project, job_id_to_look_for)
+  current_job_number = ""
+  all_jobs_for_current_project["builds"].each do |current_job|
+    if get_jobs_params(current_job["url"])["parent_job_build_id"] == job_id_to_look_for
+      current_job_number = current_job["number"]
+      break
+    end
+  end
+
+  current_job_number
+end
+
+def get_jobs_params(url_to_job)
+  parameters_to_return = {}
+  url_to_job = url_to_job.gsub(/http:\/\/[\w\.]*/, @config["jenkins_base_url"])
+  job_info = JSON.parse(make_get_request(url_to_job + "api/json").body)
+  job_info["actions"].first["parameters"].each {|parameter| parameters_to_return[parameter["name"]] = parameter["value"] }
+
+  parameters_to_return
 end
 
 def trigger_job(url_to_job, params)
-  build_command = params ? "buildWithParameters" : "build"
-  response = make_post_request("#{url_to_job}/#{build_command}", params)
+  response = make_post_request("#{url_to_job}/buildWithParameters", params)
   throw "Error with post to #{url_to_job} with #{params} return was not 'Net::HTTPFound 302 Found'" unless response.kind_of?(Net::HTTPFound)
 end
 
