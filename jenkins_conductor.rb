@@ -1,12 +1,13 @@
 require 'rubygems'
 require 'optparse.rb'
-require "net/http"
-require "uri"
 require "yaml"
 require "json"
 require "parallel"
 
+require "http_helper"
+require "jenkins_job"
 require "jenkins_helpers"
+
 
 
 @config = YAML.load_file("jenkins_conductor_config.yml")
