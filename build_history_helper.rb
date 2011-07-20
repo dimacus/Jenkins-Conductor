@@ -15,8 +15,11 @@ module BuildHistoryHelper
   def get_historical_build_info(url_to_build)
     parameters_to_return = {}
     job_info = JSON.parse(make_get_request(url_to_build + "/api/json").body)
-    job_info["actions"].first["parameters"].each {|parameter| parameters_to_return[parameter["name"]] = parameter["value"] }
-
+    
+    if job_info["actions"].first["parameters"]
+      job_info["actions"].first["parameters"].each {|parameter| parameters_to_return[parameter["name"]] = parameter["value"] }
+    end
+    
     parameters_to_return
   end
 
