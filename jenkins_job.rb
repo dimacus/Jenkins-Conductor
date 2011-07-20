@@ -3,9 +3,17 @@ class JenkinsJob
   include HttpHelper
   include BuildHistoryHelper
 
-  attr_reader :parent_job_name, :parent_build_id, :jenkins_base_url, :job_name, :build_id, :result, :continue_on_failure, :test_artifacts
+  attr_reader :parent_job_name,
+              :parent_build_id,
+              :jenkins_base_url,
+              :job_name,
+              :build_id,
+              :result,
+              :continue_on_failure,
+              :test_artifacts,
+              :cli_params
 
-  def initialize(parent_job, parent_job_id, job_config, full_config, artifact_dir)
+  def initialize(parent_job, parent_job_id, job_config, full_config, artifact_dir, cli_params)
     @job_name                    = job_config.keys.first
     @parent_job_name             = parent_job
     @parent_build_id             = parent_job_id
@@ -17,6 +25,7 @@ class JenkinsJob
     @continue_on_failure         = job_config[@job_name].nil? ? true : job_config[@job_name]["continue_on_fail"]
     @test_artifacts              = job_config[@job_name].nil? ? "artifacts" : job_config[@job_name]["test_result_artifacts"]
     @artifact_dir                = artifact_dir
+    @cli_params                  = parse_cli_params(cli_params)
   end
 
 
@@ -31,7 +40,12 @@ class JenkinsJob
   end
 
   def params
-    @params ||= params_from_yaml.merge({"parent_job_name" => @parent_job_name, "parent_job_build_id" => @parent_build_id})
+    return_params = {}
+    return_params.merge!(params_from_yaml)
+    return_params.merge!(@cli_params)
+    return_params.merge!({"parent_job_name" => @parent_job_name,
+                          "parent_job_build_id" => @parent_build_id})
+    return_params
   end
 
   def get_artifacts
@@ -58,6 +72,16 @@ class JenkinsJob
   end
 
   private
+
+  def parse_cli_params(cli_params)
+    return_hash = {}
+    cli_params.split(/,/).each do |single_param|
+      key, value = single_param.split(/=/)
+      return_hash[key] = value
+    end
+
+    return_hash
+  end
 
   def params_from_yaml
     params = {}

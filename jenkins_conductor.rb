@@ -10,11 +10,12 @@ require "jenkins_job"
 
 
 @config = YAML.load_file("jenkins_conductor_config.yml")
-cli_params = ARGV.getopts("c:", "current_job:", "b:", "build_id:")
+cli_params = ARGV.getopts("c:", "current_job:", "b:", "build_id:", "p:", "params:")
 
 
-parent_job = cli_params["c"].nil? ? cli_params["current_job"] : cli_params["c"]
+parent_job           = cli_params["c"].nil? ? cli_params["current_job"] : cli_params["c"]
 @parent_job_build_id = cli_params["b"].nil? ? cli_params["build_id"] : cli_params["b"]
+cli_params           = cli_params["p"].nil? ? cli_params["params"] : cli_params["p"]
 
 
 throw "Job #{parent_job} could not be found in jenkins_conductor_config.yml"                 unless @config["jobs"][parent_job]
@@ -28,10 +29,10 @@ artifact_dir = @config["artifact_destination"] || "artifacts"
 
 
 serial_jobs = @config["jobs"][parent_job]["downstream_jobs"]["serial_jobs"]
-serial_jobs = serial_jobs.nil? ? [] : serial_jobs.collect {|yaml_job| JenkinsJob.new(parent_job, @parent_job_build_id, yaml_job, @config, artifact_dir)}
+serial_jobs = serial_jobs.nil? ? [] : serial_jobs.collect {|yaml_job| JenkinsJob.new(parent_job, @parent_job_build_id, yaml_job, @config, artifact_dir, cli_params)}
 
 parallel_jobs = @config["jobs"][parent_job]["downstream_jobs"]["parallel_jobs"]
-parallel_jobs = parallel_jobs.nil? ? [] : parallel_jobs.collect {|yaml_job| JenkinsJob.new(parent_job, @parent_job_build_id, yaml_job, @config, artifact_dir)}
+parallel_jobs = parallel_jobs.nil? ? [] : parallel_jobs.collect {|yaml_job| JenkinsJob.new(parent_job, @parent_job_build_id, yaml_job, @config, artifact_dir, cli_params)}
 
 
 serial_jobs.each do |serial_build|
