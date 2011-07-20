@@ -14,8 +14,8 @@ class JenkinsJob
                                   "password" => full_config["basic_auth"]["password"]} if full_config["basic_auth"]
     @job_config                  = job_config
     @historical_builds_to_ignore = []
-    @continue_on_failure         = job_config[@job_name]["continue_on_fail"]
-    @test_artifacts              = job_config[@job_name]["test_result_artifacts"]
+    @continue_on_failure         = job_config[@job_name].nil? ? true : job_config[@job_name]["continue_on_fail"]
+    @test_artifacts              = job_config[@job_name].nil? ? "artifacts" : job_config[@job_name]["test_result_artifacts"]
     @artifact_dir                = artifact_dir
   end
 
@@ -60,7 +60,12 @@ class JenkinsJob
   private
 
   def params_from_yaml
-    @job_config[@job_name]["params"] || {}
+    params = {}
+    unless @job_config[@job_name].nil?
+     params = params.merge(@job_config[@job_name]["params"]) if @job_config[@job_name]["params"]
+    end
+    
+    params
   end
 
   def unzip_file(url)
