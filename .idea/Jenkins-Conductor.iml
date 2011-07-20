@@ -24,6 +24,7 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" scope="PROVIDED" name="[gem] parallel (v0.3.6, /Users/dima/projects/groupon_master/vendor/gems/parallel-0.3.6) from path" level="application" />
   </component>
 </module>
 
