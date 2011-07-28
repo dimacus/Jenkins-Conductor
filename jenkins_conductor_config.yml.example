@@ -1,5 +1,6 @@
 jenkins_base_url: http://jenkins.com
 artifact_destination: artifacts
+wait_for_job_timeout: 1200 #20 mins in seconds
 basic_auth:
   username: billy bob
   password: was here

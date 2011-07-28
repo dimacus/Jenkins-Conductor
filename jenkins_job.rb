@@ -26,12 +26,13 @@ class JenkinsJob
     @test_artifacts              = job_config[@job_name].nil? ? "artifacts" : job_config[@job_name]["test_result_artifacts"]
     @artifact_dir                = artifact_dir
     @cli_params                  = parse_cli_params(cli_params)
+    @wait_for_job_timeout        = full_config["wait_for_job_timeout"]
   end
 
 
   def trigger_job
     make_post_request("#{url}/buildWithParameters", params)
-    @build_id = wait_for_build_to_start
+    @build_id = wait_for_build_to_start(@wait_for_job_timeout)
     @result   = wait_for_build_to_finish
   end
 
@@ -118,7 +119,7 @@ class JenkinsJob
     current_build["result"]
   end
 
-  def wait_for_build_to_start(timeout = 1200) #Wait for 20 mins before timing out
+  def wait_for_build_to_start(timeout = 1200)
 
     puts "Waiting for job #{@job_name} build  to start"
     start_time = Time.now
