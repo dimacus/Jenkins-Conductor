@@ -107,7 +107,7 @@ class JenkinsJob
 
    if file.include? ".zip"
      puts "Unzipping #{file}"
-     `cd #{@artifact_dir}; unzip #{file}; cd -`
+     `cd #{@artifact_dir}; unzip #{file} > /dev/null; cd -`
    end
   end
 

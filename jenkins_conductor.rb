@@ -42,7 +42,7 @@ serial_jobs.each do |serial_build|
   if serial_build.result.upcase != "SUCCESS"
     error_message = "#{serial_build.job_name} has finished with status of #{serial_build.result}\n\n"
     error_message += "This job was explicitly set to exit on failure"
-    throw error_message if serial_build.continue_on_failure == false
+    raise error_message if serial_build.continue_on_failure == false
   end
 end
 
@@ -54,14 +54,9 @@ Parallel.map(parallel_jobs, :in_threads => max_parallel_jobs) do |parallel_build
   parallel_build.get_artifacts
 end
 
-all_builds = Array.new
-
-all_builds << serial_jobs
-all_builds << parallel_jobs
-
 all_builds_passed = true
 
-all_builds.flatten.each do |build|
+(serial_jobs + parallel_jobs).each do |build| do |build|
   puts "#{build.job_name} - #{build.result} - #{build.url}/#{build.build_id}"
   all_builds_passed = false if build.result.upcase != "SUCCESS"
 end
