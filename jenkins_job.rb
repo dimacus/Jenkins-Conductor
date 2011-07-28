@@ -11,7 +11,8 @@ class JenkinsJob
               :result,
               :continue_on_failure,
               :test_artifacts,
-              :cli_params
+              :cli_params,
+              :ignore_failed_build
 
   def initialize(parent_job, parent_job_id, job_config, full_config, artifact_dir, cli_params)
     @job_name                    = job_config.keys.first
@@ -27,6 +28,7 @@ class JenkinsJob
     @artifact_dir                = artifact_dir
     @cli_params                  = parse_cli_params(cli_params)
     @wait_for_job_timeout        = full_config["wait_for_job_timeout"]
+    @ignore_failed_build         = job_config[@job_name]['ignore_failed_build'] if job_config[@job_name]
   end
 
 
@@ -34,6 +36,9 @@ class JenkinsJob
     make_post_request("#{url}/buildWithParameters", params)
     @build_id = wait_for_build_to_start(@wait_for_job_timeout)
     @result   = wait_for_build_to_finish
+
+    @result = "SUCCESS" if @ignore_failed_build #Sometimes you don't care if job passes or fails, just want the build to run
+                                                #Shame on you if you are this way, but who am i to judge?
   end
 
   def url
@@ -76,9 +81,11 @@ class JenkinsJob
 
   def parse_cli_params(cli_params)
     return_hash = {}
-    cli_params.split(/,/).each do |single_param|
-      key, value = single_param.split(/=/)
-      return_hash[key] = value
+    if cli_params
+      cli_params.split(/,/).each do |single_param|
+        key, value = single_param.split(/=/)
+        return_hash[key] = value
+      end
     end
 
     return_hash
