@@ -27,7 +27,7 @@ class JenkinsJob
     @test_artifacts              = job_config[@job_name].nil? ? "artifacts" : job_config[@job_name]["test_result_artifacts"]
     @artifact_dir                = artifact_dir
     @cli_params                  = parse_cli_params(cli_params)
-    @wait_for_job_timeout        = full_config["wait_for_job_timeout"]
+    @wait_for_job_timeout        = full_config["wait_for_job_timeout"] || 1200
     @ignore_failed_build         = job_config[@job_name]['ignore_failed_build'] if job_config[@job_name]
   end
 
@@ -36,9 +36,6 @@ class JenkinsJob
     make_post_request("#{url}/buildWithParameters", params)
     @build_id = wait_for_build_to_start(@wait_for_job_timeout)
     @result   = wait_for_build_to_finish
-
-    @result = "SUCCESS" if @ignore_failed_build #Sometimes you don't care if job passes or fails, just want the build to run
-                                                #Shame on you if you are this way, but who am i to judge?
   end
 
   def url
@@ -123,10 +120,19 @@ class JenkinsJob
 
     @build_api_response = current_build
 
-    current_build["result"]
+    result = current_build["result"]
+
+    if result != "SUCCESS"
+      #Sometimes you don't care if job passes or fails,
+      #just want the build to run
+      #Shame on you if you are this way, but who am i to judge?
+      result = result + " - Status was ignored" if @ignore_failed_build
+    end
+
+    result
   end
 
-  def wait_for_build_to_start(timeout = 1200)
+  def wait_for_build_to_start(timeout)
 
     puts "Waiting for job #{@job_name} build  to start"
     start_time = Time.now

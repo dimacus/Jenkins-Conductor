@@ -58,7 +58,9 @@ all_builds_passed = true
 
 (serial_jobs + parallel_jobs).each do |build|
   puts "#{build.job_name} - #{build.result} - #{build.url}/#{build.build_id}"
-  all_builds_passed = false if build.result.upcase != "SUCCESS"
+  if build.result.upcase != "SUCCESS"
+    all_builds_passed = false unless build.result.upcase.include? "- STATUS WAS IGNORED"
+  end
 end
 
 exit 1 unless all_builds_passed
