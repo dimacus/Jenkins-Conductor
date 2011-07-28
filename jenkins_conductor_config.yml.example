@@ -19,6 +19,7 @@ jobs:
           - JobName2:
               test_result_artifacts:
                 - hello.zip
+              ignore_failed_build: false #Set to true if you don't want parent build to fail when this build fails
               params:
                 param2: Hello There I'm Sexy, are you?
 
